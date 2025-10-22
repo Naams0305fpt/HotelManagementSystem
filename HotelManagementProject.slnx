@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="BusinessLayer/BusinessLayer.csproj" />
+  <Project Path="DataAccessLayer/DataAccessLayer.csproj" />
+  <Project Path="Models/Models.csproj" />
+  <Project Path="WPF/PhamHuynhSumWPF.csproj" />
+</Solution>

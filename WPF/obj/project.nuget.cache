@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "dgSpecHash": "LVT2Sw5zK80=",
+  "success": true,
+  "projectFilePath": "D:\\FPT Documents\\PRN212\\Assignment\\HotelManagementProject\\WPF\\PhamHuynhSumWPF.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Naams\\.nuget\\packages\\microsoft.extensions.configuration\\9.0.10\\microsoft.extensions.configuration.9.0.10.nupkg.sha512",
+    "C:\\Users\\Naams\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\9.0.10\\microsoft.extensions.configuration.abstractions.9.0.10.nupkg.sha512",
+    "C:\\Users\\Naams\\.nuget\\packages\\microsoft.extensions.configuration.fileextensions\\9.0.10\\microsoft.extensions.configuration.fileextensions.9.0.10.nupkg.sha512",
+    "C:\\Users\\Naams\\.nuget\\packages\\microsoft.extensions.configuration.json\\9.0.10\\microsoft.extensions.configuration.json.9.0.10.nupkg.sha512",
+    "C:\\Users\\Naams\\.nuget\\packages\\microsoft.extensions.fileproviders.abstractions\\9.0.10\\microsoft.extensions.fileproviders.abstractions.9.0.10.nupkg.sha512",
+    "C:\\Users\\Naams\\.nuget\\packages\\microsoft.extensions.fileproviders.physical\\9.0.10\\microsoft.extensions.fileproviders.physical.9.0.10.nupkg.sha512",
+    "C:\\Users\\Naams\\.nuget\\packages\\microsoft.extensions.filesystemglobbing\\9.0.10\\microsoft.extensions.filesystemglobbing.9.0.10.nupkg.sha512",
+    "C:\\Users\\Naams\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.10\\microsoft.extensions.primitives.9.0.10.nupkg.sha512"
+  ],
+  "logs": []
+}

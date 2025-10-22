@@ -1,0 +1,43 @@
+﻿<UserControl x:Class="PhamHuynhSumWPF.Views.CustomerView.ProfileView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PhamHuynhSumWPF.Views.AdminView"
+             mc:Ignorable="d"
+             Background="{StaticResource LightBrush}" Width="335" Height="290">
+
+    <Grid Margin="15,15,0,10" MinWidth="300" MaxWidth="500" HorizontalAlignment="Left">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Full Name:" Style="{StaticResource LabelStyle}"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Entity.CustomerFullName}"/>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Telephone:" Style="{StaticResource LabelStyle}"/>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Entity.Telephone}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Email:" Style="{StaticResource LabelStyle}"/>
+        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Entity.EmailAddress}"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="Birthday:" Style="{StaticResource LabelStyle}"/>
+        <DatePicker Grid.Row="3" Grid.Column="1" SelectedDate="{Binding Entity.CustomerBirthday}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0" Text="New Password:" Style="{StaticResource LabelStyle}"/>
+        <PasswordBox x:Name="txtPassword" Grid.Row="4" Grid.Column="1"/>
+
+        <StackPanel Grid.Row="5" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,20,0">
+            <Button Content="Save Profile" Width="100" Command="{Binding SaveCommand}" Height="25"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
