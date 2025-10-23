@@ -2,34 +2,42 @@
 using DataAccessLayer.Repositories.Implementations;
 using Models.Entities;
 using System.Collections.ObjectModel;
-using PhamHuynhSumWPF.ViewModels.Base;
+using PhamHuynhSumWPF.ViewModels.Base; // Sửa namespace nếu cần
+using System; // <<< THÊM USING NÀY
 
-namespace PhamHuynhSumWPF.ViewModels
+namespace PhamHuynhSumWPF.ViewModels // Sửa namespace nếu cần
 {
     public class BookingHistoryViewModel : ViewModelBase
     {
         private readonly BookingService _bookingService;
         private readonly int _customerId;
 
-        public ObservableCollection<Booking> Bookings { get; } = [];
+        public ObservableCollection<BookingReservation> Reservations { get; } = [];
 
         public BookingHistoryViewModel(int customerId)
         {
             _customerId = customerId;
-            var bookingRepo = new BookingRepository();
+
+            var reservationRepo = new BookingReservationRepository();
+            var detailRepo = new BookingDetailRepository();
             var roomRepo = new RoomRepository();
-            _bookingService = new BookingService(bookingRepo, roomRepo);
+            _bookingService = new BookingService(reservationRepo, detailRepo, roomRepo);
 
             LoadBookings();
+
+            // --- BƯỚC 3: LẮNG NGHE SỰ KIỆN ---
+            // Khi CustomerBookingViewModel gửi thông báo, hãy gọi lại hàm LoadBookings()
+            CustomerBookingViewModel.OnBookingSuccess += (sender, e) => LoadBookings();
+            // ---------------------------------
         }
 
         private void LoadBookings()
         {
-            Bookings.Clear();
-            var results = _bookingService.GetByCustomerId(_customerId);
-            foreach (var booking in results)
+            Reservations.Clear();
+            var results = _bookingService.GetReservationsByCustomerId(_customerId);
+            foreach (var res in results)
             {
-                Bookings.Add(booking);
+                Reservations.Add(res);
             }
         }
     }

@@ -26,11 +26,14 @@ namespace PhamHuynhSumWPF.ViewModels
 
         private readonly CustomerService _customerService;
 
+        // --- CẬP NHẬT CONSTRUCTOR ---
         public LoginViewModel()
         {
             var customerRepo = new CustomerRepository();
-            _customerService = new CustomerService(customerRepo);
+            var reservationRepo = new BookingReservationRepository(); // <<< THÊM DÒNG NÀY
+            _customerService = new CustomerService(customerRepo, reservationRepo); // <<< CẬP NHẬT THAM SỐ
         }
+        // ------------------------------
 
         private void DoLogin()
         {

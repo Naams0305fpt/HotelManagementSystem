@@ -7,8 +7,11 @@
              xmlns:vm="clr-namespace:PhamHuynhSumWPF.ViewModels"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
-             Background="{StaticResource LightBrush}"
-             d:DataContext="{d:DesignInstance Type=vm:ReportViewModel, IsDesignTimeCreatable=True}">
+             Background="{StaticResource LightBrush}">
+
+    <UserControl.DataContext>
+        <vm:ReportViewModel/>
+    </UserControl.DataContext>
 
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -21,17 +24,15 @@
             <DatePicker SelectedDate="{Binding StartDate}"/>
             <TextBlock Text="To:" Style="{StaticResource LabelStyle}" Margin="20,5,0,0"/>
             <DatePicker SelectedDate="{Binding EndDate}"/>
-            <Button Content="Load Report" Command="{Binding LoadReportCommand}" Margin="20,5,5,5" Width="100"/>
+            <Button Content="Load Report" Command="{Binding LoadReportCommand}" Margin="20,5,5,5"/>
         </StackPanel>
 
-        <DataGrid Grid.Row="1" ItemsSource="{Binding Bookings}">
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Reservations}" CanUserAddRows="False" IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Booking ID" Binding="{Binding BookingID}" Width="*"/>
+                <DataGridTextColumn Header="Reservation ID" Binding="{Binding BookingReservationID}" Width="*"/>
                 <DataGridTextColumn Header="Customer ID" Binding="{Binding CustomerID}" Width="*"/>
-                <DataGridTextColumn Header="Room ID" Binding="{Binding RoomID}" Width="*"/>
-                <DataGridTextColumn Header="Start Date" Binding="{Binding StartDate, StringFormat='d'}" Width="*"/>
-                <DataGridTextColumn Header="End Date" Binding="{Binding EndDate, StringFormat='d'}" Width="*"/>
-                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*"/>
+                <DataGridTextColumn Header="Booking Date" Binding="{Binding BookingDate, StringFormat='d'}" Width="*"/>
+                <DataGridTextColumn Header="Status" Binding="{Binding BookingStatus}" Width="*"/>
                 <DataGridTextColumn Header="Total Price" Binding="{Binding TotalPrice, StringFormat='C'}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>

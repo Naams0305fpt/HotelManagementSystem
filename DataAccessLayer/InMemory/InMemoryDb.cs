@@ -8,7 +8,7 @@ namespace DataAccessLayer.InMemory
 {
     public sealed class InMemoryDb
     {
-        private static readonly object _lock = new();
+        private static readonly Lock _lock = new();
         private static InMemoryDb? _instance;
         public static InMemoryDb Instance
         {
@@ -25,23 +25,26 @@ namespace DataAccessLayer.InMemory
             }
         }
 
-
         private InMemoryDb()
         {
             SeedData.Seed(this);
         }
 
+        // --- CÁC DANH SÁCH ĐÃ CẬP NHẬT ---
+        public List<Customer> Customers { get; } = [];
+        public List<RoomType> RoomTypes { get; } = [];
+        public List<Room> Rooms { get; } = [];
+        // public List<Booking> Bookings { get; } = new(); // <<< XÓA DÒNG NÀY
+        public List<BookingReservation> BookingReservations { get; } = []; // <<< THÊM DÒNG NÀY
+        public List<BookingDetail> BookingDetails { get; } = []; // <<< THÊM DÒNG NÀY
+        // ---------------------------------
 
-        public List<Customer> Customers { get; } = new();
-        public List<RoomType> RoomTypes { get; } = new();
-        public List<Room> Rooms { get; } = new();
-        public List<Booking> Bookings { get; } = new();
-
-
-        // Auto-increment helpers
+        // --- CÁC HELPER ID ĐÃ CẬP NHẬT ---
         public int NextCustomerId => Customers.Count == 0 ? 1 : Customers[^1].CustomerID + 1;
         public int NextRoomTypeId => RoomTypes.Count == 0 ? 1 : RoomTypes[^1].RoomTypeID + 1;
         public int NextRoomId => Rooms.Count == 0 ? 1 : Rooms[^1].RoomID + 1;
-        public int NextBookingId => Bookings.Count == 0 ? 1 : Bookings[^1].BookingID + 1;
+        // public int NextBookingId => Bookings.Count == 0 ? 1 : Bookings[^1].BookingID + 1; // <<< XÓA
+        public int NextBookingReservationId => BookingReservations.Count == 0 ? 1 : BookingReservations[^1].BookingReservationID + 1; // <<< THÊM
+        // ---------------------------------
     }
 }

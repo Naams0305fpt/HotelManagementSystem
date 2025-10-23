@@ -8,6 +8,7 @@ using PhamHuynhSumWPF.Helpers;
 using PhamHuynhSumWPF.ViewModels.Base;
 using System.Linq; // Cần cho ToList()
 using PhamHuynhSumWPF.Views;
+using Customer = Models.Entities.Customer; // <<< THÊM DÒNG NÀY
 
 namespace PhamHuynhSumWPF.ViewModels
 {
@@ -31,12 +32,15 @@ namespace PhamHuynhSumWPF.ViewModels
         public RelayCommand DeleteCommand => new(_ => Delete(), _ => SelectedCustomer != null);
 
 
+        // --- CẬP NHẬT CONSTRUCTOR ---
         public CustomersViewModel()
         {
             var repo = new CustomerRepository();
-            _service = new CustomerService(repo);
+            var reservationRepo = new BookingReservationRepository(); // <<< THÊM DÒNG NÀY
+            _service = new CustomerService(repo, reservationRepo); // <<< CẬP NHẬT THAM SỐ
             Load();
         }
+        // ------------------------------
 
         private void Load()
         {

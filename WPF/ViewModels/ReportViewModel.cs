@@ -1,9 +1,10 @@
 ﻿using BusinessLayer.Services;
 using DataAccessLayer.Repositories.Implementations;
 using Models.Entities;
-using System.Collections.ObjectModel;
 using PhamHuynhSumWPF.Helpers;
 using PhamHuynhSumWPF.ViewModels.Base;
+using System;
+using System.Collections.ObjectModel;
 
 namespace PhamHuynhSumWPF.ViewModels
 {
@@ -11,7 +12,8 @@ namespace PhamHuynhSumWPF.ViewModels
     {
         private readonly BookingService _bookingService;
 
-        public ObservableCollection<Booking> Bookings { get; } = [];
+        // --- THAY ĐỔI KIỂU DỮ LIỆU ---
+        public ObservableCollection<BookingReservation> Reservations { get; } = [];
 
         private DateTime _startDate = DateTime.Today.AddMonths(-1);
         public DateTime StartDate { get => _startDate; set => Set(ref _startDate, value); }
@@ -23,19 +25,23 @@ namespace PhamHuynhSumWPF.ViewModels
 
         public ReportViewModel()
         {
-            var bookingRepo = new BookingRepository();
+            // Khởi tạo service mới
+            var reservationRepo = new BookingReservationRepository();
+            var detailRepo = new BookingDetailRepository();
             var roomRepo = new RoomRepository();
-            _bookingService = new BookingService(bookingRepo, roomRepo);
+            _bookingService = new BookingService(reservationRepo, detailRepo, roomRepo);
+
             LoadReport();
         }
 
         private void LoadReport()
         {
-            Bookings.Clear();
-            var results = _bookingService.GetBookingsForReport(StartDate, EndDate);
-            foreach (var booking in results)
+            Reservations.Clear();
+            // Gọi phương thức service mới
+            var results = _bookingService.GetReservationsForReport(StartDate, EndDate);
+            foreach (var res in results)
             {
-                Bookings.Add(booking);
+                Reservations.Add(res);
             }
         }
     }

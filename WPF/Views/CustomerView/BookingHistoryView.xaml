@@ -3,19 +3,64 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:PhamHuynhSumWPF.Views"
+             xmlns:local="clr-namespace:PhamHuynhSumWPF.Views.CustomerView"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="{StaticResource LightBrush}">
 
     <Grid Margin="10">
-        <DataGrid ItemsSource="{Binding Bookings}">
+        <DataGrid ItemsSource="{Binding Reservations}" CanUserAddRows="False" IsReadOnly="True" AutoGenerateColumns="False">
+            <DataGrid.RowDetailsTemplate>
+                <DataTemplate>
+                    <Border Margin="10" Padding="10" Background="{StaticResource GrayBrush}" CornerRadius="3">
+
+                        <StackPanel>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="Room ID" FontWeight="Bold" Margin="3"/>
+                                <TextBlock Grid.Column="1" Text="Start Date" FontWeight="Bold" Margin="3"/>
+                                <TextBlock Grid.Column="2" Text="End Date" FontWeight="Bold" Margin="3"/>
+                                <TextBlock Grid.Column="3" Text="Price" FontWeight="Bold" Margin="3" HorizontalAlignment="Right"/>
+                            </Grid>
+
+                            <Separator Margin="0,5,0,5"/>
+
+                            <ItemsControl ItemsSource="{Binding BookingDetails}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,3">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0" Text="{Binding RoomID}" Margin="3"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding StartDate, StringFormat='d'}" Margin="3"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding EndDate, StringFormat='d'}" Margin="3"/>
+                                            <TextBlock Grid.Column="3" Text="{Binding ActualPrice, StringFormat='C'}" Margin="3" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </DataGrid.RowDetailsTemplate>
+
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Booking ID" Binding="{Binding BookingID}" Width="*"/>
-                <DataGridTextColumn Header="Room ID" Binding="{Binding RoomID}" Width="*"/>
-                <DataGridTextColumn Header="Start Date" Binding="{Binding StartDate, StringFormat='d'}" Width="*"/>
-                <DataGridTextColumn Header="End Date" Binding="{Binding EndDate, StringFormat='d'}" Width="*"/>
-                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*"/>
+                <DataGridTextColumn Header="Reservation ID" Binding="{Binding BookingReservationID}" Width="*"/>
+                <DataGridTextColumn Header="Booking Date" Binding="{Binding BookingDate, StringFormat='d'}" Width="*"/>
+                <DataGridTextColumn Header="Status" Binding="{Binding BookingStatus}" Width="*"/>
                 <DataGridTextColumn Header="Total Price" Binding="{Binding TotalPrice, StringFormat='C'}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>

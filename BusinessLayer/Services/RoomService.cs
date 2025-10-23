@@ -4,41 +4,42 @@ using DataAccessLayer.Repositories.Interfaces;
 using Models.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BusinessLayer.Services
 {
     public class RoomService(IRoomRepository repo,
                        IRoomTypeRepository roomTypeRepo,
-                       IBookingRepository bookingRepo)
+                       IBookingDetailRepository bookingDetailRepo)
     {
         private readonly IRoomRepository _repo = repo;
         private readonly IRoomTypeRepository _roomTypeRepo = roomTypeRepo;
-        private readonly IBookingRepository _bookingRepo = bookingRepo;
+        // --- THAY THẾ REPO ---
+        // private readonly IBookingRepository _bookingRepo; // <<< XÓA DÒNG NÀY
+        private readonly IBookingDetailRepository _bookingDetailRepo = bookingDetailRepo; // <<< THÊM DÒNG NÀY
 
+        // --- CẬP NHẬT LOGIC GetAvailableRooms ---
         public IEnumerable<Room> GetAvailableRooms(DateTime start, DateTime end)
         {
             if (start.Date >= end.Date)
             {
-                return []; // Trả về danh sách trống nếu ngày không hợp lệ
+                return [];
             }
 
-            // Lấy tất cả các booking có xung đột thời gian
-            var conflictingBookings = _bookingRepo.GetAll()
-                .Where(b => b.StartDate.Date < end.Date && b.EndDate.Date > start.Date)
-                .ToList();
+            // Lấy tất cả các chi tiết booking có xung đột thời gian
+            var conflictingBookingDetails = _bookingDetailRepo.GetConflictingBookings(start, end);
 
             // Lấy ID của các phòng đã bị đặt
-            var bookedRoomIds = conflictingBookings.Select(b => b.RoomID).Distinct();
+            var bookedRoomIds = conflictingBookingDetails.Select(b => b.RoomID).Distinct();
 
-            // Lấy tất cả các phòng và join với RoomType
             var allRooms = GetAllRooms();
 
-            // Trả về các phòng KHÔNG nằm trong danh sách đã bị đặt
+            // Trả về các phòng KHÔNG nằm trong danh sách đã bị đặt và ĐANG HOẠT ĐỘNG
             return [.. allRooms.Where(r => !bookedRoomIds.Contains(r.RoomID) && r.RoomStatus == Models.Enums.EntityStatus.Active)];
         }
+        // ------------------------------------
 
-        // ... (GetAllRooms, GetAllRoomTypes, Search giữ nguyên) ...
         public IEnumerable<Room> GetAllRooms()
         {
             var rooms = _repo.GetAll();
@@ -55,16 +56,15 @@ namespace BusinessLayer.Services
             return _roomTypeRepo.GetAll();
         }
 
+        // --- CẬP NHẬT LOGIC SEARCH (Tối ưu hóa) ---
         public IEnumerable<Room> Search(string keyword)
         {
-            var k = keyword.ToLower();
             return GetAllRooms()
-                .Where(r => (r.RoomNumber?.ToLower().Contains(k, StringComparison.CurrentCultureIgnoreCase) ?? false)
-                         || (r.RoomDescription?.ToLower().Contains(k, StringComparison.CurrentCultureIgnoreCase) ?? false));
+                .Where(r => (r.RoomNumber?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
+                         || (r.RoomDescription?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false));
         }
+        // ---------------------------------------
 
-
-        // --- CẬP NHẬT PHƯƠNG THỨC NÀY ---
         public RepositoryResult<Room> Create(Room r)
         {
             var error = Validate(r, isNew: true);
@@ -72,7 +72,6 @@ namespace BusinessLayer.Services
             return _repo.Add(r);
         }
 
-        // --- CẬP NHẬT PHƯƠNG THỨC NÀY ---
         public RepositoryResult<Room> Update(Room r)
         {
             var error = Validate(r, isNew: false);
@@ -82,10 +81,16 @@ namespace BusinessLayer.Services
 
         public RepositoryResult<bool> Delete(int id)
         {
+            // --- THÊM LOGIC NGHIỆP VỤ ---
+            var details = _bookingDetailRepo.GetAll().Where(d => d.RoomID == id);
+            if (details.Any())
+            {
+                return RepositoryResult<bool>.Fail("Cannot delete room. This room has existing booking details.");
+            }
+            // ---------------------------
             return _repo.Delete(id);
         }
 
-        // --- CẬP NHẬT HOÀN TOÀN PHƯƠNG THỨC NÀY ---
         private string? Validate(Room r, bool isNew)
         {
             if (!Validators.NotEmpty(r.RoomNumber) || !Validators.MaxLength(r.RoomNumber, 50))

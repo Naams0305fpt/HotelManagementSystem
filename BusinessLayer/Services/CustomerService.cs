@@ -8,10 +8,10 @@ using System.Text;
 
 namespace BusinessLayer.Services
 {
-    public class CustomerService
+    public class CustomerService(ICustomerRepository repo, IBookingReservationRepository reservationRepo)
     {
-        private readonly ICustomerRepository _repo;
-        public CustomerService(ICustomerRepository repo) { _repo = repo; }
+        private readonly ICustomerRepository _repo = repo;
+        private readonly IBookingReservationRepository _reservationRepo = reservationRepo;
 
         // --- PHƯƠNG THỨC MỚI ---
         public IEnumerable<Customer> GetAll()
@@ -30,8 +30,8 @@ namespace BusinessLayer.Services
         {
             var k = keyword.ToLower();
             return _repo.GetAll()
-                .Where(c => (c.CustomerFullName?.ToLower().Contains(k) ?? false)
-                         || (c.EmailAddress?.ToLower().Contains(k) ?? false));
+                .Where(c => (c.CustomerFullName?.ToLower().Contains(k, StringComparison.CurrentCultureIgnoreCase) ?? false)
+                         || (c.EmailAddress?.ToLower().Contains(k, StringComparison.CurrentCultureIgnoreCase) ?? false));
         }
 
         public RepositoryResult<Customer> Create(Customer c)
@@ -48,12 +48,18 @@ namespace BusinessLayer.Services
             return _repo.Update(c);
         }
 
-        // --- PHƯƠNG THỨC MỚI ---
         public RepositoryResult<bool> Delete(int id)
         {
             var customer = _repo.GetById(id);
             if (customer == null) return RepositoryResult<bool>.Fail("Customer not found.");
-            // (Bạn có thể thêm logic kiểm tra, ví dụ: không cho xóa nếu khách hàng có booking)
+
+            // --- KIỂM TRA LOGIC NGHIỆP VỤ MỚI ---
+            if (_reservationRepo.GetByCustomerId(id).Any())
+            {
+                return RepositoryResult<bool>.Fail("Cannot delete customer. This customer has existing booking reservations.");
+            }
+            // ------------------------------------
+
             return _repo.Delete(id);
         }
 
@@ -88,5 +94,6 @@ namespace BusinessLayer.Services
                 return "Birthday cannot be in the future.";
             return null;
         }
+
     }
 }

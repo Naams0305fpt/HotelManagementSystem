@@ -25,16 +25,16 @@ namespace PhamHuynhSumWPF.ViewModels
         public RelayCommand EditCommand => new(_ => Edit(), _ => SelectedRoom != null);
         public RelayCommand DeleteCommand => new(_ => Delete(), _ => SelectedRoom != null);
 
+        // --- CẬP NHẬT CONSTRUCTOR ---
         public RoomsViewModel()
         {
-            // --- CẬP NHẬT KHỞI TẠO SERVICE ---
             var repo = new RoomRepository();
             var roomTypeRepo = new RoomTypeRepository();
-            var bookingRepo = new BookingRepository(); // <<< THÊM DÒNG NÀY
-            _service = new RoomService(repo, roomTypeRepo, bookingRepo); // <<< CẬP NHẬT THAM SỐ
-            // ----------------------------------
+            var bookingDetailRepo = new BookingDetailRepository(); // <<< THÊM DÒNG NÀY
+            _service = new RoomService(repo, roomTypeRepo, bookingDetailRepo); // <<< CẬP NHẬT THAM SỐ
             Load();
         }
+        // ------------------------------
 
         private void Load()
         {

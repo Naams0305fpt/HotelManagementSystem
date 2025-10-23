@@ -1,68 +1,115 @@
 ﻿using DataAccessLayer.Common;
 using DataAccessLayer.Repositories.Interfaces;
 using Models.Entities;
+using Models.Enums; // <<< THÊM
 using System;
 using System.Collections.Generic;
+using System.Linq; // <<< THÊM
 using System.Text;
 
 namespace BusinessLayer.Services
 {
-    public class BookingService
+    // Lớp này được viết lại hoàn toàn
+    public class BookingService(IBookingReservationRepository reservationRepo,
+                          IBookingDetailRepository detailRepo,
+                          IRoomRepository roomRepo)
     {
-        private readonly IBookingRepository _repo;
-        private readonly IRoomRepository _roomRepo;
+        private readonly IBookingReservationRepository _reservationRepo = reservationRepo;
+        private readonly IBookingDetailRepository _detailRepo = detailRepo;
+        private readonly IRoomRepository _roomRepo = roomRepo;
 
-        public BookingService(IBookingRepository repo, IRoomRepository roomRepo)
+        // Dùng cho Customer: Xem lịch sử
+        public IEnumerable<BookingReservation> GetReservationsByCustomerId(int customerId)
         {
-            _repo = repo; _roomRepo = roomRepo;
+            // Lấy tất cả các đơn đặt hàng của khách
+            var reservations = _reservationRepo.GetByCustomerId(customerId).OrderByDescending(r => r.BookingDate).ToList();
+
+            // Lấy tất cả chi tiết
+            var allDetails = _detailRepo.GetAll().ToList();
+
+            // Gán chi tiết vào đơn đặt hàng
+            foreach (var res in reservations)
+            {
+                res.BookingDetails = [.. allDetails.Where(d => d.BookingReservationID == res.BookingReservationID)];
+            }
+            return reservations;
         }
 
-        // --- PHƯƠNG THỨC MỚI ---
-        public IEnumerable<Booking> GetByCustomerId(int customerId)
+        // Dùng cho Admin: Báo cáo
+        public IEnumerable<BookingReservation> GetReservationsForReport(DateTime start, DateTime end)
         {
-            return _repo.GetByCustomerId(customerId).OrderByDescending(b => b.StartDate);
+            // Lấy các đơn đặt hàng trong khoảng ngày (dựa trên BookingDate)
+            var reservations = _reservationRepo.GetByDateRange(start, end).OrderByDescending(r => r.TotalPrice).ToList();
+            var allDetails = _detailRepo.GetAll().ToList();
+
+            // Gán chi tiết vào
+            foreach (var res in reservations)
+            {
+                res.BookingDetails = [.. allDetails.Where(d => d.BookingReservationID == res.BookingReservationID)];
+            }
+            return reservations;
         }
 
-        // --- PHƯƠNG THỨC MỚI ---
-        public IEnumerable<Booking> GetBookingsForReport(DateTime start, DateTime end)
+        // Dùng cho Customer: Đặt 1 phòng
+        public RepositoryResult<BookingReservation> CreateSingleRoomBooking(int customerId, int roomId, DateTime startDate, DateTime endDate)
         {
-            return _repo.GetByDateRange(start, end).OrderByDescending(b => b.TotalPrice);
-        }
+            // 1. Validation
+            var room = _roomRepo.GetById(roomId);
+            if (room == null) return RepositoryResult<BookingReservation>.Fail("Selected room does not exist.");
 
-        public RepositoryResult<Booking> Create(Booking b)
-        {
-            var e = Validate(b);
-            if (e != null) return RepositoryResult<Booking>.Fail(e);
+            if (startDate.Date >= endDate.Date) return RepositoryResult<BookingReservation>.Fail("End Date must be after Start Date.");
 
-            var room = _roomRepo.GetById(b.RoomID);
-            if (room == null) return RepositoryResult<Booking>.Fail("Room not found");
-            var nights = (b.EndDate.Date - b.StartDate.Date).Days;
-            if (nights <= 0) return RepositoryResult<Booking>.Fail("EndDate must be after StartDate");
+            // 2. Kiểm tra phòng có trống không
+            var conflictingBookings = _detailRepo.GetConflictingBookings(startDate, endDate);
+            if (conflictingBookings.Any(b => b.RoomID == roomId))
+            {
+                return RepositoryResult<BookingReservation>.Fail("Room is not available for the selected dates.");
+            }
 
-            b.TotalPrice = room.RoomPricePerDate * nights;
-            return _repo.Add(b);
-        }
+            // 3. Tính toán
+            int nights = (endDate.Date - startDate.Date).Days;
+            decimal actualPrice = room.RoomPricePerDate;
+            decimal totalPrice = nights * actualPrice;
 
-        public RepositoryResult<Booking> Update(Booking b)
-        {
-            var e = Validate(b);
-            if (e != null) return RepositoryResult<Booking>.Fail(e);
+            // 4. Tạo Reservation (Đơn hàng)
+            var reservation = new BookingReservation
+            {
+                CustomerID = customerId,
+                BookingDate = DateTime.Now,
+                TotalPrice = totalPrice,
+                BookingStatus = BookingStatus.Confirmed // Tự động xác nhận
+            };
 
-            var room = _roomRepo.GetById(b.RoomID);
-            if (room == null) return RepositoryResult<Booking>.Fail("Room not found");
-            var nights = (b.EndDate.Date - b.StartDate.Date).Days;
-            if (nights <= 0) return RepositoryResult<Booking>.Fail("EndDate must be after StartDate");
-            b.TotalPrice = room.RoomPricePerDate * nights;
+            // 5. Lưu Reservation (để lấy ID)
+            var resResult = _reservationRepo.Add(reservation);
+            if (!resResult.Success) return resResult; // Trả về lỗi nếu không add được
 
-            return _repo.Update(b);
-        }
+            if (resResult.Data == null)
+            {
+                return RepositoryResult<BookingReservation>.Fail("Failed to create reservation (data was null).");
+            }
 
-        private string? Validate(Booking b)
-        {
-            if (b.CustomerID <= 0) return "CustomerID invalid";
-            if (b.RoomID <= 0) return "RoomID invalid";
-            if (b.StartDate.Date > b.EndDate.Date) return "StartDate must be before EndDate";
-            return null;
+            // 6. Tạo Detail (Chi tiết)
+            var detail = new BookingDetail
+            {
+                BookingReservationID = resResult.Data.BookingReservationID,
+                RoomID = roomId,
+                StartDate = startDate,
+                EndDate = endDate,
+                ActualPrice = actualPrice
+            };
+
+            // 7. Lưu Detail
+            var detailResult = _detailRepo.Add(detail);
+            if (!detailResult.Success)
+            {
+                // Rollback: Nếu lưu detail thất bại, xóa Reservation đã tạo
+                _reservationRepo.Delete(resResult.Data.BookingReservationID);
+                return RepositoryResult<BookingReservation>.Fail($"Failed to add booking detail: {detailResult.Error}");
+            }
+
+            // 8. Trả về Reservation đã tạo thành công
+            return resResult;
         }
     }
 }

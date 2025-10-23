@@ -4,6 +4,7 @@ using Models.Entities;
 using System.Windows;
 using PhamHuynhSumWPF.Helpers;
 using PhamHuynhSumWPF.ViewModels.Base;
+using Customer = Models.Entities.Customer;
 
 namespace PhamHuynhSumWPF.ViewModels
 {
@@ -17,13 +18,15 @@ namespace PhamHuynhSumWPF.ViewModels
 
         public RelayCommand SaveCommand => new(_ => Save());
 
+        // --- CẬP NHẬT CONSTRUCTOR ---
         public ProfileViewModel(Customer loggedInCustomer)
         {
             var repo = new CustomerRepository();
-            _service = new CustomerService(repo);
+            var reservationRepo = new BookingReservationRepository(); // <<< THÊM DÒNG NÀY
+            _service = new CustomerService(repo, reservationRepo); // <<< CẬP NHẬT THAM SỐ
+            // ------------------------------
 
             _original = loggedInCustomer;
-            // Tạo bản sao (clone) để chỉnh sửa, tránh ảnh hưởng
             Entity = new Customer
             {
                 CustomerID = _original.CustomerID,
@@ -32,9 +35,10 @@ namespace PhamHuynhSumWPF.ViewModels
                 EmailAddress = _original.EmailAddress,
                 CustomerBirthday = _original.CustomerBirthday,
                 CustomerStatus = _original.CustomerStatus,
-                Password = _original.Password // Giữ lại mật khẩu
+                Password = _original.Password
             };
         }
+        // ------------------------------
 
         private void Save()
         {
