@@ -2,29 +2,26 @@
 using DataAccessLayer.Repositories.Implementations;
 using Models.Entities;
 using System.Windows;
-using PhamHuynhSumWPF.Helpers;
-using PhamHuynhSumWPF.ViewModels.Base;
+using PhamHuynhSumWPF.Helpers; // Sửa namespace nếu cần
+using PhamHuynhSumWPF.ViewModels.Base; // Sửa namespace nếu cần
 using Customer = Models.Entities.Customer;
 
-namespace PhamHuynhSumWPF.ViewModels
+namespace PhamHuynhSumWPF.ViewModels // Sửa namespace nếu cần
 {
     public class ProfileViewModel : ViewModelBase
     {
         private readonly CustomerService _service;
-
-        // Dùng Entity để binding cho Edit, và Original để giữ bản gốc
         public Customer Entity { get; private set; }
         private readonly Customer _original;
 
-        public RelayCommand SaveCommand => new(_ => Save());
+        // --- BỎ COMMAND TỪ ĐÂY ---
+        // public RelayCommand SaveCommand => new(_ => Save());
 
-        // --- CẬP NHẬT CONSTRUCTOR ---
         public ProfileViewModel(Customer loggedInCustomer)
         {
             var repo = new CustomerRepository();
-            var reservationRepo = new BookingReservationRepository(); // <<< THÊM DÒNG NÀY
-            _service = new CustomerService(repo, reservationRepo); // <<< CẬP NHẬT THAM SỐ
-            // ------------------------------
+            var reservationRepo = new BookingReservationRepository();
+            _service = new CustomerService(repo, reservationRepo);
 
             _original = loggedInCustomer;
             Entity = new Customer
@@ -38,9 +35,9 @@ namespace PhamHuynhSumWPF.ViewModels
                 Password = _original.Password
             };
         }
-        // ------------------------------
 
-        private void Save()
+        // --- ĐỔI THÀNH "PUBLIC" ---
+        public void Save()
         {
             var res = _service.Update(Entity);
             if (res.Success)
@@ -50,7 +47,7 @@ namespace PhamHuynhSumWPF.ViewModels
                 _original.Telephone = Entity.Telephone;
                 _original.EmailAddress = Entity.EmailAddress;
                 _original.CustomerBirthday = Entity.CustomerBirthday;
-                _original.Password = Entity.Password;
+                _original.Password = Entity.Password; // Dòng này giờ sẽ chứa mật khẩu MỚI
                 MessageBox.Show("Profile updated successfully!");
             }
             else
